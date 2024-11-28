@@ -1,14 +1,12 @@
-import React, { useState } from "react";
 import { TrashIcon } from "@/components/icons";
-
-interface InitialFormData {
-  name: string;
-  url: string;
-}
+import { zodResolver } from "@hookform/resolvers/zod";
+import React from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import { FormSchema, formSchema } from "../../utils/validation";
 
 interface AddEditFormProps {
-  initialData?: InitialFormData;
-  onSubmit: (data: InitialFormData) => void;
+  initialData?: Partial<FormSchema>;
+  onSubmit: (data: FormSchema) => void;
   onCancel?: () => void;
 }
 
@@ -17,25 +15,22 @@ const AddEditForm: React.FC<AddEditFormProps> = ({
   onSubmit,
   onCancel,
 }) => {
-  const [formData, setFormData] = useState<InitialFormData>({
-    name: "",
-    url: "",
-    ...initialData,
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    defaultValues: initialData,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSubmit(formData);
+  const onSubmitForm: SubmitHandler<FormSchema> = (data) => {
+    onSubmit(data);
   };
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handleSubmit(onSubmitForm)}
       className='border-border-primary border-2 rounded-lg flex flex-row text-center w-full bg-bg-primary'>
       <div className='flex flex-col text-left p-6 space-y-2 w-full'>
         <div className='flex flex-col space-y-2'>
@@ -43,29 +38,33 @@ const AddEditForm: React.FC<AddEditFormProps> = ({
             Nazwa
           </label>
           <input
+            {...register("name")}
             type='text'
             id='name'
-            name='name'
             placeholder='np. Promocje'
-            value={formData.name}
-            onChange={handleChange}
             className='border-border-primary border-2 rounded-xl p-2'
           />
+          {errors.name && (
+            <p className='text-red-500 text-sm'>{errors.name.message}</p>
+          )}
         </div>
+
         <div className='flex flex-col space-y-2'>
           <label htmlFor='url' className='text-text-secondary-700'>
             Link
           </label>
           <input
+            {...register("url")}
             type='text'
             id='url'
-            name='url'
             placeholder='Wklej lub wyszukaj'
-            value={formData.url}
-            onChange={handleChange}
             className='border-border-primary border-2 rounded-xl p-2'
           />
+          {errors.url && (
+            <p className='text-red-500 text-sm'>{errors.url.message}</p>
+          )}
         </div>
+
         <div className='flex flex-row space-x-2'>
           <button
             type='button'
@@ -75,8 +74,9 @@ const AddEditForm: React.FC<AddEditFormProps> = ({
           </button>
           <button
             type='submit'
+            disabled={isSubmitting}
             className='text-button-secondary-colorFg border-button-secondary-colorBorder border rounded-lg p-2'>
-            Dodaj
+            {isSubmitting ? "Przesyłanie..." : "Dodaj"}
           </button>
         </div>
       </div>
