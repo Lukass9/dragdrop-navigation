@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const formSchema = z.object({
-  name: z.string().min(1, { message: "Nazwa jest wymagana" }),
+  label: z.string().min(1, { message: "Nazwa jest wymagana" }),
   url: z.string().optional(),
 });
 
