@@ -31,12 +31,16 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
     setFormType(null);
   };
 
+  const handleDeleteItemWhenEdit = (id: string) => {
+    onDelete(id);
+  };
+
   return (
-    <li className='border p-2 rounded-md mb-4'>
+    <li className='border rounded-md mb-4 space-y-2 bg-background-primary'>
       <div className='flex justify-between items-start'>
         <div>
-          <p>{item.label}</p>
-          <p>{item.url}</p>
+          <h2 className='font-bold text-lg '>{item.label}</h2>
+          <h3 className='text-sm text-gray-500'>{item.url}</h3>
         </div>
         <div className='flex space-x-2'>
           <button onClick={() => setFormType("edit")}>Edytuj</button>
@@ -49,10 +53,11 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
           initialData={formType === "edit" ? item : {}}
           onSubmit={handleFormSubmit}
           onCancel={() => setFormType(null)}
+          deleteItem={() => handleDeleteItemWhenEdit(item.id)}
         />
       )}
       {item.children && (
-        <ul>
+        <ul className='bg-background-secondary pl-16'>
           {item.children.map((child) => (
             <NavigationItem
               key={child.id}

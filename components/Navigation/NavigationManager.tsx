@@ -1,30 +1,47 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   useNavigationState,
   NavigationItem as NavigationItemType,
 } from "@/hooks/useNavigationState";
-import NavigationItemComponent from "@/components/Navigation/NavigationItem";
+import NavigationItemComponent, {
+  NavigationItemData,
+} from "@/components/Navigation/NavigationItem";
+import AddEditForm from "./AddEditForm";
 
 const NavigationManager: React.FC = () => {
   const initialData: NavigationItemType[] = [
     { id: "1", label: "Strona główna", children: [] },
   ];
-  const { navigation, addItem, updateItem, deleteItem } =
+  const { navigation, addItem, addChildrenItem, updateItem, deleteItem } =
     useNavigationState(initialData);
+  const [isAdd, setIsAdd] = useState<boolean>(false);
+
+  const handleFormSubmit = (data: Partial<NavigationItemData>) => {
+    addItem({ id: `${Date.now()}`, ...data } as NavigationItemData);
+    setIsAdd(false);
+  };
 
   return (
-    <div>
-      <ul>
+    <div className='bg-background-secondary'>
+      <ul className='bg-background-secondary'>
         {navigation.map((item) => (
           <NavigationItemComponent
             key={item.id}
             item={item}
-            onAdd={addItem}
+            onAdd={addChildrenItem}
             onEdit={updateItem}
             onDelete={deleteItem}
           />
         ))}
       </ul>
+      {isAdd ? (
+        <AddEditForm
+          onSubmit={handleFormSubmit}
+          onCancel={() => setIsAdd(false)}
+        />
+      ) : (
+        <button onClick={() => setIsAdd(true)}>Dodaj</button>
+      )}
     </div>
   );
 };

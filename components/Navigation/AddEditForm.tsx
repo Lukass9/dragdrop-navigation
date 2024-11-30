@@ -3,17 +3,20 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormSchema, formSchema } from "../../utils/validation";
 import { TrashIcon } from "../icons";
+import { useNavigationState } from "@/hooks/useNavigationState";
 
 interface AddEditFormProps {
   initialData?: Partial<FormSchema>;
   onSubmit: (data: FormSchema) => void;
   onCancel: () => void;
+  deleteItem?: () => void;
 }
 
 const AddEditForm: React.FC<AddEditFormProps> = ({
   initialData,
   onSubmit,
   onCancel,
+  deleteItem,
 }) => {
   const {
     register,
@@ -24,6 +27,7 @@ const AddEditForm: React.FC<AddEditFormProps> = ({
     defaultValues: initialData,
   });
 
+  const handleDelete = () => (deleteItem ? deleteItem() : onCancel());
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
@@ -65,7 +69,7 @@ const AddEditForm: React.FC<AddEditFormProps> = ({
       </div>
 
       <div className='flex justify-center place-items-start'>
-        <button type='button' onClick={onCancel} className='flex'>
+        <button type='button' onClick={handleDelete} className='flex'>
           <TrashIcon />
         </button>
       </div>
