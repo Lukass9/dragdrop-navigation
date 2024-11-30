@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { navigationData } from "../data/initialState";
 
 export interface NavigationItem {
   id: string;
@@ -8,22 +9,30 @@ export interface NavigationItem {
 }
 
 export const useNavigationState = (initialItems: NavigationItem[]) => {
-  const [navigation, setNavigation] = useState<NavigationItem[]>(initialItems);
+  const [navigation, setNavigation] =
+    useState<NavigationItem[]>(navigationData);
 
   const modifyTree = (
     items: NavigationItem[],
-    action: (item: NavigationItem) => boolean
+    action: (item: NavigationItem, parent: NavigationItem | null) => boolean,
+    parent: NavigationItem | null = null
   ): boolean => {
     for (const item of items) {
-      if (action(item)) return true;
-      if (item.children && modifyTree(item.children, action)) return true;
+      if (action(item, parent)) return true;
+      if (item.children && modifyTree(item.children, action, item)) return true;
     }
     return false;
   };
 
-  const addItem = (parentId: string, newItem: NavigationItem) => {
+  const addItem = (newItem: NavigationItem) => {
     const updatedNavigation = [...navigation];
-    const added = modifyTree(updatedNavigation, (item) => {
+    updatedNavigation.push(newItem);
+    setNavigation(updatedNavigation);
+  };
+
+  const addChildrenItem = (parentId: string, newItem: NavigationItem) => {
+    const updatedNavigation = [...navigation];
+    const addedChildren = modifyTree(updatedNavigation, (item) => {
       if (item.id === parentId) {
         item.children = item.children || [];
         item.children.push(newItem);
@@ -31,7 +40,7 @@ export const useNavigationState = (initialItems: NavigationItem[]) => {
       }
       return false;
     });
-    if (added) setNavigation(updatedNavigation);
+    if (addedChildren) setNavigation(updatedNavigation);
   };
 
   const updateItem = (
@@ -51,15 +60,28 @@ export const useNavigationState = (initialItems: NavigationItem[]) => {
 
   const deleteItem = (id: string) => {
     const updatedNavigation = [...navigation];
-    const deleted = modifyTree(updatedNavigation, (item) => {
-      if (item.children) {
-        item.children = item.children.filter((child) => child.id !== id);
+
+    const deleted = modifyTree(updatedNavigation, (item, parent) => {
+      if (item.id === id && parent) {
+        parent.children = parent.children?.filter((child) => child.id !== id);
         return true;
       }
+
+      if (item.id === id && !parent) {
+        const index = updatedNavigation.findIndex(
+          (navItem) => navItem.id === id
+        );
+        if (index !== -1) {
+          updatedNavigation.splice(index, 1);
+          return true;
+        }
+      }
+
       return false;
     });
+
     if (deleted) setNavigation(updatedNavigation);
   };
 
-  return { navigation, addItem, updateItem, deleteItem };
+  return { navigation, addItem, addChildrenItem, updateItem, deleteItem };
 };
