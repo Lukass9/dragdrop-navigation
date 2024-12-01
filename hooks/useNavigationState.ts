@@ -1,16 +1,14 @@
 import { useState } from "react";
-import { navigationData } from "../data/initialState";
 
 export interface NavigationItem {
   id: string;
   label: string;
   url?: string;
-  children?: NavigationItem[];
+  children: NavigationItem[];
 }
 
 export const useNavigationState = (initialItems: NavigationItem[]) => {
-  const [navigation, setNavigation] =
-    useState<NavigationItem[]>(navigationData);
+  const [navigation, setNavigation] = useState<NavigationItem[]>(initialItems);
 
   const modifyTree = (
     items: NavigationItem[],
@@ -83,5 +81,12 @@ export const useNavigationState = (initialItems: NavigationItem[]) => {
     if (deleted) setNavigation(updatedNavigation);
   };
 
-  return { navigation, addItem, addChildrenItem, updateItem, deleteItem };
+  return {
+    navigation,
+    addItem,
+    addChildrenItem,
+    updateItem,
+    deleteItem,
+    setNavigation,
+  };
 };
