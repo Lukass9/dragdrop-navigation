@@ -1,11 +1,5 @@
+import { NavigationItem } from "@/types/navigation.types";
 import { useState } from "react";
-
-export interface NavigationItem {
-  id: string;
-  label: string;
-  url?: string;
-  children: NavigationItem[];
-}
 
 export const useNavigationState = (initialItems: NavigationItem[]) => {
   const [navigation, setNavigation] = useState<NavigationItem[]>(initialItems);

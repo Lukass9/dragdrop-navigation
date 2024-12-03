@@ -1,15 +1,11 @@
-import React, { useState } from "react";
 import AddEditForm from "@/components/Navigation/AddEditForm";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import React, { useState } from "react";
+import TripleButton from "../Button/TripleButton";
 import { MoveIcon } from "../icons";
-
-export interface NavigationItemData {
-  id: string;
-  label: string;
-  url?: string;
-  children: NavigationItemData[];
-}
+import { NavigationItem as NavigationItemData } from "@/types/navigation.types";
+import { v4 as uuidv4 } from "uuid";
 
 interface NavigationItemProps {
   item: NavigationItemData;
@@ -26,44 +22,41 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
 }) => {
   const [formType, setFormType] = useState<"edit" | "add" | null>(null);
 
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, transform, transition, isOver } =
     useSortable({ id: item.id });
+
+  const style = {
+    color: isOver ? "green" : undefined,
+    transition,
+    transform: CSS.Translate.toString(transform),
+  };
 
   const handleFormSubmit = (data: Partial<NavigationItemData>) => {
     if (formType === "edit") {
       onEdit(item.id, data);
     } else if (formType === "add") {
-      onAdd(item.id, { id: `${Date.now()}`, ...data } as NavigationItemData);
+      onAdd(item.id, { id: uuidv4(), ...data } as NavigationItemData);
     }
     setFormType(null);
   };
 
-  const renderActionButtons = () => (
-    <div className='flex space-x-2'>
-      <button onClick={() => setFormType("edit")}>Edytuj</button>
-      <button onClick={() => onDelete(item.id)}>Usuń</button>
-      <button onClick={() => setFormType("add")}>Dodaj pozycję menu</button>
-    </div>
-  );
-
   return (
-    <li
-      ref={setNodeRef}
-      style={{ transition, transform: CSS.Transform.toString(transform) }}
-      className='border rounded-md bg-background-primary'>
-      <div className='flex justify-between items-start'>
+    <li ref={setNodeRef} style={style} className=' bg-background-primary'>
+      <div className='border rounded-md px-4 py-3 flex justify-between items-start'>
         <div className='flex justify-center items-center space-x-4'>
-          <button {...attributes} {...listeners}>
+          <button className='hover:cursor-grab' {...attributes} {...listeners}>
             <MoveIcon />
           </button>
           <div>
-            <h2 className='font-bold text-lg'>
-              {item.label + " id: " + item.id}
-            </h2>
+            <h2 className='font-bold text-lg'>{item.label}</h2>
             {item.url && <h3 className='text-sm text-gray-500'>{item.url}</h3>}
           </div>
         </div>
-        {renderActionButtons()}
+        <TripleButton
+          setFormType={setFormType}
+          onDelete={onDelete}
+          item={item}
+        />
       </div>
       {formType && (
         <AddEditForm
@@ -72,19 +65,6 @@ const NavigationItem: React.FC<NavigationItemProps> = ({
           onCancel={() => setFormType(null)}
           deleteItem={() => onDelete(item.id)}
         />
-      )}
-      {item.children?.length > 0 && (
-        <ul className='bg-background-secondary pl-16'>
-          {item.children.map((child) => (
-            <NavigationItem
-              key={child.id}
-              item={child}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onAdd={onAdd}
-            />
-          ))}
-        </ul>
       )}
     </li>
   );
